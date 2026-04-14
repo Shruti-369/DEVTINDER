@@ -1,8 +1,18 @@
+require('dotenv').config();
 const express = require("express");
-
 const app = express();
+const connectDB = require("./config/database");
 
-const {adminAuth, userAuth} = require("./middlewares/auth");
+connectDB()
+    .then(() => console.log("✅ DB connected successfully"))
+    .catch((err) => console.log("❌ DB connection failed", err));
+
+app.listen(process.env.PORT, () => {
+    console.log(`Server is running on port ${process.env.PORT} 🚀`);
+});
+
+
+
 
 // //this will only handle GET call to /user
 // app.get("/user", ()=>{
@@ -12,42 +22,7 @@ const {adminAuth, userAuth} = require("./middlewares/auth");
 // app.post("/user", ()=>{s running on port 3006 🚀");
 // });
 
-// Handle Auth Middleware for all GET< POST, ...requests
-app.use("/admin", adminAuth);
 
-app.post("/user/login", () => {
-    res.send("User logged in successfully");
-})
-
-app.get("/user", userAuth, (req, res) => {
-    res.send({ firstname: "Shruti", lastname: "jangra" });
-});
-
-app.get("/admin/getAllData", (req, res) => {
-    //logic of checking if the user is admin or not
-    const token = "xyz";
-    const isAdminAuthorized = token == "xyz";
-    if (isAdminAuthorized) {
-        res.send("All data");
-    } else {
-        res.status(403).send("Unauthorized");
-    }
-});
-
-app.get("/admin/deleteUser", (req, res) => {
-    //logic of checking if the user is admin or not
-    const token = "xyz";
-    const isAdminAuthorized = token == "xyz";
-    if (isAdminAuthorized) {
-        res.send("User deleted successfully");
-    } else {
-        res.status(403).send("Unauthorized");
-    }
-});
-
-app.listen(7777, () => {
-    console.log("Server is running on port 7777 🚀");
-});
 //     // saving data to db
 //     res.send("data saved successfully");
 // });
@@ -63,3 +38,7 @@ app.listen(7777, () => {
 
 // app.listen(3006, () => {
 //     console.log("Server i
+
+
+//
+
