@@ -4,12 +4,15 @@ const app = express();
 const connectDB = require("./config/database");
 
 connectDB()
-    .then(() => console.log("✅ DB connected successfully"))
+    .then(() => {
+        console.log("✅ DB connected successfully")
+        app.listen(process.env.PORT, () => {
+        console.log(`Server is running on port ${process.env.PORT} 🚀`);
+            });
+        })
     .catch((err) => console.log("❌ DB connection failed", err));
 
-app.listen(process.env.PORT, () => {
-    console.log(`Server is running on port ${process.env.PORT} 🚀`);
-});
+
 
 
 
