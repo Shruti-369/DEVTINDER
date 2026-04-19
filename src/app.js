@@ -2,6 +2,27 @@ require('dotenv').config();
 const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
+const User = require("./models/user");
+
+app.use(express.json()); //middleware to parse JSON data from request body
+
+app.post("/signup", async (req, res) => {
+    try {
+        const user = new User({
+            firstName: "Virat",
+            lastName: "Kohli",
+            emailId: "virat@example.com",
+            password: "pass123",
+            age: 37
+        });
+        await user.save();
+        res.json({ message: "User created successfully!", user });
+    } catch (err) {
+        console.error("Signup error:", err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 
 connectDB()
     .then(() => {
@@ -11,6 +32,8 @@ connectDB()
             });
         })
     .catch((err) => console.log("❌ DB connection failed", err));
+
+
 
 
 

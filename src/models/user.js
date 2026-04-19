@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
 
 });
 
-const User = mongoose.model("User ", userSchema);
+const User = mongoose.model("User", userSchema);
 //always capital first letter for model name and it should be singular and mongoose will automatically create a collection with plural name in the database
   
 module.exports = User;
