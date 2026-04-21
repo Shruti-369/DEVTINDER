@@ -3,12 +3,22 @@ const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user");
+const { validateSignUpData } = require("./utils/validation");
+const bcrypt = require("bcrypt");
 
 app.use(express.json()); //middleware to parse JSON data from request body
 
 
-//push notification API 
+//push 
 app.post("/signup", async (req, res) => {
+    // Validation of data
+    validateSignUpData(req);
+
+    // Hashing the password before saving to the database
+    const { password } = req.body;
+    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
+    console.log("Hashed Password:", hashedPassword);
+    req.body.password = hashedPassword;
 
     //creating a new instance of User model and saving it to the database
     try {
@@ -18,6 +28,29 @@ app.post("/signup", async (req, res) => {
     } catch (err) {
         console.error("Signup error:", err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+app.post("/login", async (req, res) => {
+    try {
+        const { emailId, password } = req.body;
+
+        const user = await User.findOne({ emailId: emailId });
+
+        if (!user) {
+            throw new Error("Invalid credentials");
+        }
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (isPasswordValid) {
+            res.send("Login Successfull!!");
+        } else {
+            throw new Error("Invalid credentials");
+        }
+
+    } catch (err) {
+        res.status(400).send("ERROR : " + err.message);
     }
 });
 
@@ -61,10 +94,16 @@ app.delete("/delete", async (req, res) => {
     }
 });
 
-app.patch("/update", async (req, res) => {
-    const userId = req.body.userId;
+app.patch("/update/:userId", async (req, res) => {
+    const userId = req.params?.userId;
     const data = req.body;
+
     try {
+        const ALLOWED_UPDATES = ["photoUrl", "password", "about", "skills"];
+        const isUpdatesAllowed = Object.keys(data).every((key) => ALLOWED_UPDATES.includes(key));
+        if (!isUpdatesAllowed) {
+            throw new Error("Invalid updates! Only photoUrl, password, about and skills can be updated.");
+        }
         const user = await User.findByIdAndUpdate(userId, data, {
             new: true,
             runValidators: true

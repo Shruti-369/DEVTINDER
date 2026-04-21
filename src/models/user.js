@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const { minify } = require('vite');
+const validator = require("validator");
 
 const userSchema = new mongoose.Schema({
     firstName: {
@@ -15,11 +16,21 @@ const userSchema = new mongoose.Schema({
         required: true,
         unique: true,
         lowercase: true,
-        trim: true
+        trim: true,
+        validate(value) {
+            if (!validator.isEmail(value)) {
+                throw new Error("Invalid email address");
+            }
+        }
     },
     password: {
         type: String,
-        required: true
+        required: true,
+        validate(value) {
+            if (!validator.isStrongPassword(value)) {
+                throw new Error("Password should not contain 'password'");
+            }
+        }
     },
     age: {
         type: Number,
@@ -41,10 +52,13 @@ const userSchema = new mongoose.Schema({
         default: "Hey there! I am using this app."
     },
     skills: {
-        type: [String]
+        type: [String],
+        maxlength: 25
     },
-
-});
+},
+    {
+        timestamps: true
+    });
 
 const User = mongoose.model("User", userSchema);
 //always capital first letter for model name and it should be singular and mongoose will automatically create a collection with plural name in the database
