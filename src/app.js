@@ -3,7 +3,7 @@ const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user");
-const { validateSignUpData } = require("./utils/validation");
+const { validateSignUpData, validateLoginData, validateUpdateData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
 
 app.use(express.json()); //middleware to parse JSON data from request body
@@ -30,8 +30,9 @@ app.post("/signup", async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 });
-
+//login API
 app.post("/login", async (req, res) => {
+    validateLoginData(req);
     try {
         const { emailId, password } = req.body;
 
@@ -58,17 +59,28 @@ app.post("/login", async (req, res) => {
 app.get("/user", async (req, res) => {
 
     try {
-        const userEmail = req.body.emailId;
-        const user = await User.find({ emailId: userEmail });
-        if (user.length === 0) {
-            return res.status(404).json({ message: "User not found" });
-        } else {
-            res.send(user);
+        const { emailId, password } = req.body;
+
+        const user = await User.findOne({ emailId: emailId });
+
+        if (!user) {
+            throw new Error("Invalid credentials");
         }
-        res.send(user);
-    }
-    catch (err) {
-        res.status(500).json({ error: err.message });
+
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+
+        if (isPasswordValid) {
+            // Create a JWT Token (you should generate dynamically instead of hardcoding)
+
+            // Add the token to cookie and send response back to the user
+            res.cookie("token", "kvndkfjbvhjdfbhjvbdjfbvjbdjfbvjhvbdjhvbvdjhbgvdvshgvsdv");
+            res.send("Login Successful!!");
+        } else {
+            throw new Error("Invalid credentials");
+        }
+
+    } catch (err) {
+        res.status(400).send("ERROR: " + err.message);
     }
 });
 
@@ -95,6 +107,7 @@ app.delete("/delete", async (req, res) => {
 });
 
 app.patch("/update/:userId", async (req, res) => {
+    validateUpdateData(req);
     const userId = req.params?.userId;
     const data = req.body;
 
