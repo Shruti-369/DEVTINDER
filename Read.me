@@ -18,3 +18,13 @@ for post signup :
   b. Encrypt the password
   c. Creating a new instance of the user model
 6. npm i bcrypt  
+//you need a middleware to read a cookie like express.json() in app.use is a middleware that is parsed into json
+and this npm is known as cookie-parser and it is official expressjs package
+7.npm i cookie-parser
+so, now whenever any request come, our cookies will get parsed and we can access them.
+//jwt token is divided into three things:
+  a.header
+  b.payload(secret data or the data that is being hidden inside it)
+  c.signature(that jwt uses to checks whether the token is valid or not)
+8.npm i jsonwebtoken
+// it gives you way of signing a token and verifying a token

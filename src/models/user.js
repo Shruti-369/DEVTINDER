@@ -56,8 +56,12 @@ const userSchema = new mongoose.Schema({
         type: String,
         default: "/assets/dummyUser.webp",
         validate(value) {
-            if (!validator.isURL(value)) {
-                throw new Error("photoUrl must be a valid URL");
+            if (
+                value &&
+                !validator.isURL(value, { require_protocol: true }) &&
+                !value.startsWith("/assets/")
+            ) {
+                throw new Error("photoUrl must be a valid URL or local path");
             }
         }
     },

@@ -1,10 +1,14 @@
-require('dotenv').config();
+require("dotenv").config();
 const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
 const User = require("./models/user");
 const { validateSignUpData, validateLoginData, validateUpdateData } = require("./utils/validation");
 const bcrypt = require("bcrypt");
+const cookieParser = require("cookie-parser");
+const jwt = require("jsonwebtoken");
+
+app.use(cookieParser()); //middleware to parse cookies from incoming requests
 
 app.use(express.json()); //middleware to parse JSON data from request body
 
@@ -35,23 +39,41 @@ app.post("/login", async (req, res) => {
     validateLoginData(req);
     try {
         const { emailId, password } = req.body;
-
+        //find user in db with the provided emailId
         const user = await User.findOne({ emailId: emailId });
-
         if (!user) {
             throw new Error("Invalid credentials");
         }
-
+        //compare the provided password with the hashed password stored in the database using bcrypt.compare() method
         const isPasswordValid = await bcrypt.compare(password, user.password);
-
         if (isPasswordValid) {
-            res.send("Login Successfull!!");
+            //create  a JWT token (you should generate dynamically instead of hardcoding)
+            const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); //user_id is hidden int the token
+            console.log("JWT:", process.env.JWT_SECRET);
+
+            //add the token to cookie and send response back to the user
+            res.cookie("token", token);
+            res.status(200).json({ message: "Login Successful" });
         } else {
             throw new Error("Invalid credentials");
         }
-
     } catch (err) {
-        res.status(400).send("ERROR : " + err.message);
+        res.status(400).json({ error: "ERROR : " + err.message });
+    }
+});
+
+//get profile API
+app.get("/profile", async (req, res) => {
+    const cookies = req.cookies;
+    console.log("Cookies:", cookies);
+    res.send("This is the profile page. You can access user details here.");
+
+    //extract the token from cookies 
+    const { token } = cookies;
+
+    //validate the token and get user details from it (you can use jwt.verify() method for this)
+    if (!token) {
+        return res.status(401).send("Unauthorized: No token provided");
     }
 });
 
