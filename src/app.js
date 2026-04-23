@@ -46,13 +46,13 @@ app.post("/login", async (req, res) => {
             throw new Error("Invalid credentials");
         }
         //compare the provided password with the hashed password stored in the database using bcrypt.compare() method
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.validatePassword(password);
         if (isPasswordValid) {
             //create  a JWT token (you should generate dynamically instead of hardcoding)
-            const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); //user_id is hidden int the token
+            const token = await user.getJWT();
             // console.log("JWT:", process.env.JWT_SECRET);
 
-            //add the token to cookie and send response back to the user
+            //add the token to cookie and send response back to the user 
             res.cookie("token", token);
             res.status(200).json({ message: "Login Successful" });
         } else {

@@ -81,7 +81,29 @@ const userSchema = new mongoose.Schema({
 },
     {
         timestamps: true
-    });
+    }
+);
+
+
+userSchema.methods.getJWT = async function () {
+    //inside arrow fn 'this' will not refer to the user document, so we should use regular function syntax here
+    const user = this; //instance method, so 'this' refers to the user document
+    const token = await jwt.sign({ _id: this._id }, process.env.JWT_SECRET, {
+        expiresIn: "1h",
+    }); //user_id is hidden int the token
+    return token;
+}
+
+userSchema.methods.validatePassword = async function (passwordInputByUser) {
+    const user = this;
+    const passwordHash = user.password; //hashed password stored in the database
+
+    const isPasswordValid = await bcrypt.compare(
+        passwordInputByUser,
+        passwordHash);
+
+    return isPasswordValid;
+}
 
 const User = mongoose.model("User", userSchema);
 //always capital first letter for model name and it should be singular and mongoose will automatically create a collection with plural name in the database
