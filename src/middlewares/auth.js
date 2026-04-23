@@ -1,29 +1,27 @@
-const adminAuth = (req, res, next) => {
-  console.log("Admin middleware called");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user");
 
-  const token = "xyz";
-  const isAdminAuthorized = token === "xyz";
-
-  if (!isAdminAuthorized) {
-    return res.status(403).send("Unauthorized");
+// Middleware for user authentication
+const userAuth = async (req, res, next) => {
+  try {
+    const token = req.cookies.token;
+    if (!token) {
+      return res.status(401).json({ error: "Unauthorized: No token provided" });
+    }
+    const decodeOnj = await jwt.verify(token, process.env.JWT_SECRET);
+    const { _id } = decodeOnj;
+    const user = await User.findById(_id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    req.user = user; // Attach user object to request for use in next middleware or route handler
+    next();
+  } catch (err) {
+    return res.status(401).json({ error: "Token not valid!!!!!" });
   }
-
-  next();
 };
 
 
-const userAuth = (req, res, next) => {
-  console.log("User middleware called");
-  const token = "xyz";
-  const isUserAuthorized = token === "xyz";
-  if (!isUserAuthorized) {
-    return res.status(403).send("Unauthorized");
-  } else {
-    next();
-  }
-}; 
-
-
-module.exports = { adminAuth,
-    userAuth,
+module.exports = {
+  userAuth,
 };

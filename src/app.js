@@ -7,6 +7,7 @@ const { validateSignUpData, validateLoginData, validateUpdateData } = require(".
 const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
 const jwt = require("jsonwebtoken");
+const { userAuth } = require("./middlewares/auth");
 
 app.use(cookieParser()); //middleware to parse cookies from incoming requests
 
@@ -49,7 +50,7 @@ app.post("/login", async (req, res) => {
         if (isPasswordValid) {
             //create  a JWT token (you should generate dynamically instead of hardcoding)
             const token = await jwt.sign({ _id: user._id }, process.env.JWT_SECRET, { expiresIn: "1h" }); //user_id is hidden int the token
-            console.log("JWT:", process.env.JWT_SECRET);
+            // console.log("JWT:", process.env.JWT_SECRET);
 
             //add the token to cookie and send response back to the user
             res.cookie("token", token);
@@ -63,18 +64,35 @@ app.post("/login", async (req, res) => {
 });
 
 //get profile API
-app.get("/profile", async (req, res) => {
-    const cookies = req.cookies;
-    console.log("Cookies:", cookies);
-    res.send("This is the profile page. You can access user details here.");
+app.get("/profile", userAuth, async (req, res) => {
+    // const cookies = req.cookies;
+    // // console.log("Cookies:", cookies);
 
-    //extract the token from cookies 
-    const { token } = cookies;
+    // //extract the token from cookies 
+    // const { token } = cookies;
 
-    //validate the token and get user details from it (you can use jwt.verify() method for this)
-    if (!token) {
-        return res.status(401).send("Unauthorized: No token provided");
+    // //[✅ check FIRST] if token is not present in cookies, return unauthorized error
+    // if (!token) {
+    //     return res.status(401).send("Unauthorized: No token provided");
+    // }
+
+    try {
+        // // ✅ verify AFTER check
+        // const decodedmessage = jwt.verify(token, process.env.JWT_SECRET);
+        // // console.log("Decoded JWT:", decodedmessage);
+        // const { _id } = decodedmessage;
+        // // console.log("User ID from token:", _id);
+        // const user = await User.findById(_id);
+        // if (!user) {
+        //     return res.status(404).send("User not found");
+        // }
+        const user = req.user; //userAuth middleware will add the user object to the request if the token is valid
+
+        return res.send(user);
+    } catch (err) {
+        return res.status(401).send("Invalid token");
     }
+
 });
 
 //get user by email
