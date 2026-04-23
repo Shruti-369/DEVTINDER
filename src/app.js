@@ -171,6 +171,13 @@ app.patch("/update/:userId", async (req, res) => {
     }
 });
 
+app.post("/sendConnectionRequest", userAuth, async (req, res) => {
+    const user = req.user;
+    console.log("Sending a connection request...");
+
+    res.send(`${user.firstName} ${user.lastName} wants to connect with you!`);
+})
+
 connectDB()
     .then(() => {
         console.log("✅ DB connected successfully")
