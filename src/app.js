@@ -2,98 +2,20 @@ require("dotenv").config();
 const express = require("express");
 const app = express();
 const connectDB = require("./config/database");
-const User = require("./models/user");
-const { validateSignUpData, validateLoginData, validateUpdateData } = require("./utils/validation");
-const bcrypt = require("bcrypt");
 const cookieParser = require("cookie-parser");
-const jwt = require("jsonwebtoken");
-const { userAuth } = require("./middlewares/auth");
+
 
 app.use(cookieParser()); //middleware to parse cookies from incoming requests
-
 app.use(express.json()); //middleware to parse JSON data from request body
 
 
-//push 
-app.post("/signup", async (req, res) => {
-    // Validation of data
-    validateSignUpData(req);
+const authRouter = require("./routes/auth");
+const profileRouter = require("./routes/profile");
+const requestRouter = require("./routes/request");
 
-    // Hashing the password before saving to the database
-    const { password } = req.body;
-    const hashedPassword = await bcrypt.hash(password, 10); // 10 is the salt rounds
-    console.log("Hashed Password:", hashedPassword);
-    req.body.password = hashedPassword;
-
-    //creating a new instance of User model and saving it to the database
-    try {
-        const user = new User(req.body);
-        await user.save();
-        res.json({ message: "User created successfully!", user });
-    } catch (err) {
-        console.error("Signup error:", err);
-        res.status(500).json({ error: err.message });
-    }
-});
-//login API
-app.post("/login", async (req, res) => {
-    validateLoginData(req);
-    try {
-        const { emailId, password } = req.body;
-        //find user in db with the provided emailId
-        const user = await User.findOne({ emailId: emailId });
-        if (!user) {
-            throw new Error("Invalid credentials");
-        }
-        //compare the provided password with the hashed password stored in the database using bcrypt.compare() method
-        const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            //create  a JWT token (you should generate dynamically instead of hardcoding)
-            const token = await user.getJWT();
-            // console.log("JWT:", process.env.JWT_SECRET);
-
-            //add the token to cookie and send response back to the user 
-            res.cookie("token", token);
-            res.status(200).json({ message: "Login Successful" });
-        } else {
-            throw new Error("Invalid credentials");
-        }
-    } catch (err) {
-        res.status(400).json({ error: "ERROR : " + err.message });
-    }
-});
-
-//get profile API
-app.get("/profile", userAuth, async (req, res) => {
-    // const cookies = req.cookies;
-    // // console.log("Cookies:", cookies);
-
-    // //extract the token from cookies 
-    // const { token } = cookies;
-
-    // //[✅ check FIRST] if token is not present in cookies, return unauthorized error
-    // if (!token) {
-    //     return res.status(401).send("Unauthorized: No token provided");
-    // }
-
-    try {
-        // // ✅ verify AFTER check
-        // const decodedmessage = jwt.verify(token, process.env.JWT_SECRET);
-        // // console.log("Decoded JWT:", decodedmessage);
-        // const { _id } = decodedmessage;
-        // // console.log("User ID from token:", _id);
-        // const user = await User.findById(_id);
-        // if (!user) {
-        //     return res.status(404).send("User not found");
-        // }
-        const user = req.user; //userAuth middleware will add the user object to the request if the token is valid
-
-        return res.send(user);
-    } catch (err) {
-        return res.status(401).send("Invalid token");
-    }
-
-});
+app.use("/", authRouter);
+app.use("/", profileRouter);
+app.use("/", requestRouter);
 
 //get user by email
 app.get("/user", async (req, res) => {
@@ -171,12 +93,7 @@ app.patch("/update/:userId", async (req, res) => {
     }
 });
 
-app.post("/sendConnectionRequest", userAuth, async (req, res) => {
-    const user = req.user;
-    console.log("Sending a connection request...");
 
-    res.send(`${user.firstName} ${user.lastName} wants to connect with you!`);
-})
 
 connectDB()
     .then(() => {
