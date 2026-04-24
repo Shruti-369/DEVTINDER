@@ -32,7 +32,15 @@ const validateLoginData = (req) => {
 };
 
 const validateUpdateData = (req) => {
-    const { photoUrl, about, skills } = req.body;
+    const { firstName, lastName, skills, photoUrl, about } = req.body;
+
+    if (firstName && !validator.isLength(firstName, { min: 4, max: 50 })) {
+        throw new Error("First name should be between 4 and 50 characters");
+    }
+
+    if (lastName && !validator.isLength(lastName, { min: 4, max: 50 })) {
+        throw new Error("Last name should be between 4 and 50 characters");
+    }
 
     if (photoUrl && !validator.isURL(photoUrl)) {
         throw new Error("Invalid URL for photo");
@@ -45,8 +53,17 @@ const validateUpdateData = (req) => {
     }
 }
 
+const validateForgotPasswordData = (req) => {
+    const { password } = req.body;
+
+    if (!validator.isStrongPassword(password)) {
+        throw new Error("Please enter a strong Password!");
+    }
+};
+
 module.exports = {
     validateSignUpData,
     validateLoginData,
-    validateUpdateData
+    validateUpdateData,
+    validateForgotPasswordData
 };

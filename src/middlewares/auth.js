@@ -8,8 +8,8 @@ const userAuth = async (req, res, next) => {
     if (!token) {
       return res.status(401).json({ error: "Unauthorized: No token provided" });
     }
-    const decodeOnj = await jwt.verify(token, process.env.JWT_SECRET);
-    const { _id } = decodeOnj;
+    const decodeObj = await jwt.verify(token, process.env.JWT_SECRET);
+    const { _id } = decodeObj;
     const user = await User.findById(_id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
