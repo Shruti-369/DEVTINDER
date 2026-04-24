@@ -1,13 +1,19 @@
 const express = require('express');
 const authRouter = express.Router();
-const { validateSignUpData, validateLoginData } = require("../middlewares/validation");
+const { validateSignUpData, validateLoginData } = require("../utils/validation");
 const User = require("../models/user");
 const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
+require("dotenv").config();
 
 
 authRouter.post("/signup", async (req, res) => {
     // Validation of data
-    validateSignUpData(req);
+    try {
+        validateSignUpData(req);
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
 
     // Hashing the password before saving to the database
     const { password } = req.body;
@@ -27,7 +33,12 @@ authRouter.post("/signup", async (req, res) => {
 });
 
 authRouter.post("/login", async (req, res) => {
-    validateLoginData(req);
+    try {
+        validateLoginData(req);
+    } catch (err) {
+        return res.status(400).json({ error: err.message });
+    }
+
     try {
         const { emailId, password } = req.body;
         //find user in db with the provided emailId
