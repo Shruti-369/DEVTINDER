@@ -2,11 +2,12 @@ const express = require('express');
 const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 
-requestRouter.post("/sendConnectionRequest", userAuth, async (req, res) => {
-    const user = req.user;
-    console.log("Sending a connection request...");
+requestRouter.post("/request/send/interested/:toUserId", userAuth, async (req, res) => {
+    try {
 
-    res.send(`${user.firstName} ${user.lastName} wants to connect with you!`);
+    } catch (error) {
+        res.status(400).json({ error: error.message });
+    }
 })
 
 module.exports = requestRouter;
