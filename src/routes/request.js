@@ -2,7 +2,8 @@ const express = require('express');
 const requestRouter = express.Router();
 const { userAuth } = require("../middlewares/auth");
 const { connection } = require('mongoose')
-const ConnectionRequest = require("../models/connectionRequest");;
+const ConnectionRequest = require("../models/connectionRequest");
+const User = require("../models/user");
 
 requestRouter.post("/request/send/:status/:toUserId",
     userAuth,
@@ -31,6 +32,12 @@ requestRouter.post("/request/send/:status/:toUserId",
 
             if (existingRequest) {
                 return res.status(400).json({ error: "Connection request already exists" });
+            }
+
+            //if toUserId not in db 
+            const toUser = await User.findById(toUserId);
+            if (!toUser) {
+                return res.status(404).json({ error: "User not found" });
             }
 
             const connectionRequest = new ConnectionRequest({
