@@ -13,8 +13,8 @@ profileRouter
 - DELETE /profile/remove-photo
 
 connectionRequestRouter
-- POST /request/send/interested/:userId
-- POST /request/send/ignored/:userId
+- POST /request/send/:status/:userId   //status: interensted or not
+
 - POST /request/review/accepted/:requestId
 - POST /request/review/rejected/:requestId
 
@@ -25,3 +25,4 @@ userRouter
 
 Status: ignore, interested, accepted, rejected
 
+////remember to add validations for APIs 
