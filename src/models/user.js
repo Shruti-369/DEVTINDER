@@ -3,11 +3,13 @@ const { minify } = require('vite');
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const { use } = require('react');
 
 const userSchema = new mongoose.Schema({
     firstName: {
         type: String,
         required: true,
+        index: true,
         minlength: 4,
         maxlength: 50,
         trim: true,         // ➕ removes accidental spaces
@@ -86,6 +88,7 @@ const userSchema = new mongoose.Schema({
     }
 );
 
+userSchema.index({ firstName: 1, lastName: 1 }); // Compound index for efficient searching by name
 
 userSchema.methods.getJWT = async function () {
     //inside arrow fn 'this' will not refer to the user document, so we should use regular function syntax here

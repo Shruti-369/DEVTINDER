@@ -13,6 +13,8 @@ requestRouter.post("/request/send/:status/:toUserId",
             const fromUserId = req.user._id;
             const toUserId = req.params.toUserId;
             const status = req.params.status;
+            const fromUser = await User.findById(fromUserId);
+            const toUser = await User.findById(toUserId);
 
             const validStatuses = ['ignored', 'interested'];
             if (!validStatuses.includes(status)) {
@@ -35,7 +37,6 @@ requestRouter.post("/request/send/:status/:toUserId",
             }
 
             //if toUserId not in db 
-            const toUser = await User.findById(toUserId);
             if (!toUser) {
                 return res.status(404).json({ error: "User not found" });
             }
@@ -48,10 +49,19 @@ requestRouter.post("/request/send/:status/:toUserId",
 
             const data = await connectionRequest.save();
 
+            let message = "";
+
+            if (status === "interested") {
+                message = `${fromUser.firstName} is interested in ${toUser.firstName}`;
+            }
+            else if (status === "ignored") {
+                message = `${fromUser.firstName} ignored ${toUser.firstName}`;
+            }
+
             res.json({
-                message: "Connection request sent successfully",
+                message,
                 connectionRequest: data,
-            })
+            });
 
         } catch (error) {
             res.status(400).json({ error: error.message });
