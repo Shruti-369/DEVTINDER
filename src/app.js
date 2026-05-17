@@ -12,10 +12,12 @@ app.use(express.json()); //middleware to parse JSON data from request body
 const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/request");
+const userRouter = require("./routes/user");
 
 app.use("/", authRouter);
 app.use("/profile", profileRouter);
 app.use("/", requestRouter);
+app.use("/", userRouter);
 
 
 // //get profile API
