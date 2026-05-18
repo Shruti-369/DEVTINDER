@@ -41,6 +41,7 @@ authRouter.post("/login", async (req, res) => {
 
     try {
         const { emailId, password } = req.body;
+        console.log(req.body);
 
         //find user in db with the provided emailId
         const user = await User.findOne({ emailId: emailId });
@@ -55,8 +56,15 @@ authRouter.post("/login", async (req, res) => {
             // console.log("JWT:", process.env.JWT_SECRET);
 
             //add the token to cookie and send response back to the user 
-            res.cookie("token", token);
-            res.status(200).json({ message: "Login Successful" });
+            res.cookie("token", token, {
+                httpOnly: true,
+                sameSite: "lax"
+            });
+            res.status(200)
+                .json({
+                    message: "Login successful"
+                })
+                .send(user);
         } else {
             throw new Error("Invalid credentials");
         }
