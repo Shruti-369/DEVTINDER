@@ -60,7 +60,7 @@ authRouter.post("/login", async (req, res) => {
                 expires: new Date(Date.now() + 8 * 3600000),
                 httpOnly: true,
                 secure: false,
-                sameSite: "None",
+                sameSite: "Lax",
             });
 
             res.status(200).json({
